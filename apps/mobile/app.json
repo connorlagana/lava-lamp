@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Field",
+    "slug": "field",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "scheme": "field",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#faf7f2",
+      "resizeMode": "contain",
+      "image": "./assets/splash-icon.png"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.field.app"
+    },
+    "android": {
+      "package": "com.field.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#faf7f2",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-font",
+      "expo-splash-screen"
+    ],
+    "extra": {
+      "stackProjectId": null,
+      "stackPublishableKey": null,
+      "dataApiUrl": null
+    }
+  }
+}
