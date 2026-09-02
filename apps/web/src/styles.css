@@ -1,0 +1,1140 @@
+/* ------------------------------------------------------------------------
+   Field
+   White paper, and wax.
+
+   The page stays paper-white and the ink stays nearly black, because the
+   thinking has to be readable. Everything between those two — the blobs
+   behind the words, the branches, the washes drifting under the whole map —
+   is lava: saturated pigment, multiplied, moving slower than you are.
+   ------------------------------------------------------------------------ */
+
+/* Vendored rather than linked: the board measures its own text, so the faces
+   have to be there before the first frame, and the exporter embeds these same
+   bytes into the SVG it writes. */
+@font-face {
+  font-family: 'Bagel Fat One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('./fonts/bagel-fat-one-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: block;
+  src: url('./fonts/fraunces-latin-var.woff2') format('woff2');
+}
+
+:root {
+  --paper: #FAF9F6;
+  --paper-lit: #FFFEFB;
+  --ink: 34, 31, 28;
+
+  /* the wax */
+  --ember: 243, 97, 44;
+  --ochre: 246, 176, 44;
+  --avocado: 166, 194, 54;
+  --sage: 104, 168, 112;
+  --teal: 38, 182, 170;
+  --grape: 141, 88, 208;
+  --fuchsia: 229, 74, 154;
+  --clay: 226, 118, 88;
+  --umber: 176, 108, 62;
+
+  --hairline: rgba(34, 31, 28, 0.09);
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  --display: 'Bagel Fat One', 'Trebuchet MS', 'Avenir Next', system-ui, sans-serif;
+  --font: 'Fraunces', Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overscroll-behavior: none;
+  background: var(--paper);
+}
+
+body {
+  font-family: var(--font);
+  font-optical-sizing: auto;
+  color: rgba(var(--ink), 0.9);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  overscroll-behavior: none;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+button { cursor: pointer; }
+input:focus, textarea:focus, button:focus { outline: none; }
+::selection { background: rgba(var(--ochre), 0.32); }
+
+.file-picker { position: fixed; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+.app {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+.app[data-ready] { opacity: 1; }
+
+/* ---------------------------------------------------------------- surface */
+
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  background: var(--paper);
+}
+.viewport[data-space] { cursor: grab; }
+.viewport[data-linking] { cursor: crosshair; }
+
+/* the barely-there tooth of the paper */
+.viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.03;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------------------------------------ the lamp
+
+   Six columns of wax behind the whole map. They rise and fall on their own
+   clocks, never in step, and they multiply into each other where they cross,
+   which is where the second colours come from. Big and blurred enough that
+   nothing here ever reads as a shape you could click.
+   ------------------------------------------------------------------------ */
+
+.ambient {
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(26px);
+  mix-blend-mode: multiply;
+}
+.ambient i {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.w1 {
+  width: 58vw; height: 52vw;
+  left: -14vw; top: -14vw;
+  background: radial-gradient(farthest-side, rgba(var(--ochre), 0.5), rgba(var(--ochre), 0) 74%);
+  animation: rise-a 78s ease-in-out infinite;
+}
+.w2 {
+  width: 64vw; height: 58vw;
+  right: -16vw; top: -2vh;
+  background: radial-gradient(farthest-side, rgba(var(--fuchsia), 0.36), rgba(var(--fuchsia), 0) 72%);
+  animation: rise-b 104s ease-in-out infinite;
+}
+.w3 {
+  width: 52vw; height: 56vw;
+  left: 12vw; bottom: -24vw;
+  background: radial-gradient(farthest-side, rgba(var(--teal), 0.42), rgba(var(--teal), 0) 74%);
+  animation: rise-c 91s ease-in-out infinite;
+}
+.w4 {
+  width: 46vw; height: 44vw;
+  right: 2vw; bottom: -18vw;
+  background: radial-gradient(farthest-side, rgba(var(--ember), 0.38), rgba(var(--ember), 0) 72%);
+  animation: rise-b 67s ease-in-out infinite reverse;
+}
+.w5 {
+  width: 40vw; height: 46vw;
+  left: 34vw; top: -20vw;
+  background: radial-gradient(farthest-side, rgba(var(--grape), 0.34), rgba(var(--grape), 0) 74%);
+  animation: rise-c 119s ease-in-out infinite reverse;
+}
+.w6 {
+  width: 44vw; height: 40vw;
+  left: -10vw; bottom: 2vh;
+  background: radial-gradient(farthest-side, rgba(var(--avocado), 0.4), rgba(var(--avocado), 0) 72%);
+  animation: rise-a 96s ease-in-out infinite reverse;
+}
+
+/* Wax does not travel sideways much. It climbs, stalls, swells and sinks. */
+@keyframes rise-a {
+  0%, 100% { transform: translate3d(0, 6vh, 0) scale(1, 0.94); }
+  38%      { transform: translate3d(3vw, -8vh, 0) scale(1.14, 1.1); }
+  70%      { transform: translate3d(-2vw, -2vh, 0) scale(0.92, 1.18); }
+}
+@keyframes rise-b {
+  0%, 100% { transform: translate3d(0, -5vh, 0) scale(1.06, 1); }
+  42%      { transform: translate3d(-4vw, 9vh, 0) scale(0.9, 1.16); }
+  74%      { transform: translate3d(2vw, 3vh, 0) scale(1.2, 0.9); }
+}
+@keyframes rise-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.96, 1.08); }
+  35%      { transform: translate3d(4vw, -10vh, 0) scale(1.18, 0.94); }
+  68%      { transform: translate3d(-3vw, 5vh, 0) scale(1.02, 1.14); }
+}
+
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  z-index: 1;
+}
+
+.nodes { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+
+/* ----------------------------------------------------------------- edges */
+
+.edges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* a zero-sized <svg> is not painted at all, so keep one pixel and let it spill */
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* A branch is drawn in the wax of the thought it feeds. Thicker near the top
+   of the map, thinning as it runs out into the leaves — but never much lighter
+   than the rim it lands on, or the bubbles look pinned to threads. */
+.branch {
+  fill: none;
+  stroke: rgba(var(--edge, var(--ink)), 0.95);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  transition: stroke 0.3s var(--ease);
+}
+.branch[data-depth='1'] { stroke: rgba(var(--edge, var(--ink)), 0.92); stroke-width: 2.2; }
+.branch[data-depth='2'] { stroke: rgba(var(--edge, var(--ink)), 0.88); stroke-width: 2; }
+.branch[data-depth='3'] { stroke: rgba(var(--edge, var(--ink)), 0.84); stroke-width: 1.8; }
+.branch[data-depth='4'] { stroke: rgba(var(--edge, var(--ink)), 0.8);  stroke-width: 1.65; }
+
+.assoc {
+  fill: none;
+  stroke: rgba(var(--edge, var(--ink)), 0.85);
+  stroke-width: 1.9;
+  stroke-dasharray: 1.6 6;
+  stroke-linecap: round;
+  transition: stroke 0.3s var(--ease);
+}
+.assoc[data-hot] { stroke: rgba(var(--edge, var(--ink)), 0.85); }
+.assoc-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.assoc-label {
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  fill: rgba(var(--ink), 0.62);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.edges [data-dim] { opacity: 0.08; }
+.assoc-group { transition: opacity 0.45s var(--ease); }
+.pending .assoc { stroke: rgba(var(--ink), 0.4); }
+
+/* --------------------------------------------------------------- thought
+
+   Words with a line drawn round them. The line is a closed curve in an <svg>
+   sized to the node's field box, and on a headline it is redrawn from a shared
+   clock — see canvas/blob.ts. Everything that makes one bubble differ from its
+   neighbour comes from its id: pigment, lean, lobe count, and the two slow
+   clocks that swell and slide each lobe.
+
+   There is no fill. The paper shows through, the branch stops at the rim, and
+   the only colour a thought carries is the one in its outline.
+   ------------------------------------------------------------------------ */
+
+.thought {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--w);
+  transform: translate3d(calc(var(--x) - 50%), calc(var(--y) - 50%), 0);
+  transition: opacity 0.45s var(--ease);
+}
+.thought[data-dim] { opacity: 0.07; pointer-events: none; }
+.thought[data-rejected] .field { opacity: 0.45; filter: saturate(0.15); }
+.thought[data-rejected] .text { opacity: 0.5; }
+
+/* Centred on the words, and larger than the box by exactly the room the curve
+   needs at full bulge. Sized in the markup, in the same pixels the curve is
+   drawn in, so the stroke is never scaled unevenly. */
+.field {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.rim {
+  fill: none;
+  stroke-width: var(--rim);
+  stroke-linejoin: round;
+  opacity: var(--rim-ink);
+  transition: opacity 0.3s var(--ease), stroke-width 0.3s var(--ease);
+}
+
+.thought:hover .rim { opacity: 1; }
+.thought[data-selected] .rim { opacity: 1; stroke-width: calc(var(--rim) * 1.45); }
+.thought[data-target] .rim { opacity: calc(var(--rim-ink) * 0.6); }
+
+/* The gradients every rim draws from. Never painted itself. */
+.pigments {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.text {
+  position: relative;
+  font-family: var(--ff, var(--font));
+  font-size: var(--fs);
+  font-weight: var(--fw);
+  letter-spacing: var(--tr);
+  line-height: var(--lh);
+  color: rgb(var(--ink));
+  opacity: var(--ia);
+  text-align: center;
+  white-space: pre;
+  z-index: 1;
+}
+.text .line { white-space: pre; }
+/* an emptied thought keeps its place, quietly, until it is given words */
+.text[data-empty] { opacity: calc(var(--ia) * 0.3); font-style: italic; }
+.text.editing {
+  white-space: pre-wrap;
+  word-break: normal;
+  min-width: 1.2em;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  caret-color: rgba(var(--accent), 0.9);
+}
+.thought[data-editing] { user-select: text; -webkit-user-select: text; }
+
+/* type label, marks, affordances: all hidden until they are wanted */
+
+.kind {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -6px);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(var(--accent), 0.95);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+}
+.thought:hover .kind, .thought[data-selected] .kind { opacity: 0.75; }
+
+.marks {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 5px);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.conviction {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: block;
+}
+.c-curious { background: transparent; box-shadow: inset 0 0 0 1.5px rgba(var(--ink), 0.3); }
+.c-researching { background: rgb(var(--teal)); }
+.c-promising { background: rgb(var(--ochre)); }
+.c-high { background: rgb(var(--ember)); }
+.c-rejected { background: rgba(var(--ink), 0.16); }
+.note-mark {
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  display: block;
+  background: rgba(var(--accent), 0.7);
+}
+
+.affordance {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.24s var(--ease), transform 0.24s var(--ease);
+  color: rgba(var(--accent), 0.9);
+}
+.thought:hover .affordance, .thought[data-selected] .affordance { opacity: 1; }
+
+.plus {
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 16px) scale(0.9);
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+.thought:hover .plus, .thought[data-selected] .plus { transform: translate(-50%, 16px) scale(1); }
+.plus svg { stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; fill: none; }
+.plus:hover { color: rgb(var(--accent)); transform: translate(-50%, 16px) scale(1.18) !important; }
+
+.handle {
+  left: 100%;
+  top: 50%;
+  transform: translate(6px, -50%);
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  cursor: crosshair;
+}
+.handle i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(var(--accent), 0.75);
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.handle:hover i { background: rgb(var(--accent)); transform: scale(1.35); }
+
+.link-label-editor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.link-label-editor input {
+  width: 190px;
+  text-align: center;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: rgba(var(--ink), 0.75);
+  background: var(--paper);
+  border-bottom: 1.5px solid rgba(var(--grape), 0.4);
+  padding: 3px 6px 4px;
+}
+.link-label-editor input::placeholder { color: rgba(var(--ink), 0.26); }
+
+/* ---------------------------------------------------------------- chrome */
+
+.trail {
+  position: fixed;
+  top: 22px;
+  left: 26px;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  max-width: 46vw;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.crumb {
+  color: rgba(var(--ink), 0.36);
+  transition: color 0.2s var(--ease);
+  white-space: nowrap;
+}
+.crumb:hover { color: rgb(var(--ember)); }
+.crumb[data-current] { color: rgba(var(--ink), 0.6); }
+.crumb i { font-style: normal; opacity: 0.4; margin: 0 7px; }
+
+.focus-pill {
+  position: fixed;
+  top: 20px;
+  right: 26px;
+  z-index: 20;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(var(--ink), 0.46);
+  border: 1.5px solid rgba(var(--grape), 0.28);
+  border-radius: 999px;
+  padding: 6px 13px;
+  background: rgba(255, 254, 251, 0.75);
+  backdrop-filter: blur(8px);
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.focus-pill:hover { color: rgba(var(--ink), 0.78); border-color: rgba(var(--grape), 0.55); }
+.focus-pill b { font-weight: 700; color: rgb(var(--grape)); }
+.focus-pill i {
+  font-style: normal;
+  opacity: 0.5;
+  margin-left: 8px;
+  font-size: 10px;
+}
+
+.corner {
+  position: fixed;
+  right: 22px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(var(--ink), 0.26);
+  padding: 6px 8px;
+  transition: color 0.25s var(--ease);
+}
+.corner:hover { color: rgba(var(--ink), 0.6); }
+.saved-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(var(--avocado));
+  opacity: 0;
+  animation: saved 2.2s var(--ease);
+}
+@keyframes saved {
+  0% { opacity: 0; transform: scale(0.4); }
+  18% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* The blank sheet asks one question, in the fat face, lit like the lamp. */
+.empty-hint {
+  position: fixed;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+.empty-hint[data-on] { opacity: 1; transition: opacity 1.3s var(--ease) 0.45s; }
+.empty-hint .tagline {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(34px, 5.6vw, 62px);
+  font-weight: 400;
+  letter-spacing: -0.004em;
+  line-height: 1.14;
+  background: linear-gradient(
+    104deg,
+    rgb(var(--ember)) 0%,
+    rgb(var(--fuchsia)) 26%,
+    rgb(var(--grape)) 48%,
+    rgb(var(--teal)) 70%,
+    rgb(var(--avocado)) 88%,
+    rgb(var(--ochre)) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: wax-drift 22s ease-in-out infinite;
+}
+@keyframes wax-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.empty-hint .prompt {
+  margin: 20px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: rgba(var(--ink), 0.34);
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translate(-50%, 8px);
+  z-index: 30;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(var(--ink), 0.72);
+  background: rgba(255, 254, 251, 0.94);
+  border: 1.5px solid rgba(var(--ochre), 0.4);
+  border-radius: 999px;
+  padding: 8px 17px;
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.toast[data-on] { opacity: 1; transform: translate(-50%, 0); }
+
+/* -------------------------------------------------------------- palette */
+
+.palette-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(250, 249, 246, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fade-in 0.18s var(--ease);
+}
+.palette {
+  position: absolute;
+  left: 50%;
+  top: 17vh;
+  transform: translateX(-50%);
+  width: min(560px, 88vw);
+  background: rgba(255, 254, 251, 0.98);
+  border: 1.5px solid rgba(var(--grape), 0.2);
+  border-radius: 26px;
+  box-shadow: 0 30px 70px -30px rgba(var(--grape), 0.45);
+  overflow: hidden;
+  animation: rise 0.24s var(--ease);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.palette-input {
+  width: 100%;
+  padding: 19px 24px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: rgba(var(--ink), 0.9);
+}
+.palette-input::placeholder { color: rgba(var(--ink), 0.28); }
+.palette-rows {
+  border-top: 1px solid var(--hairline);
+  padding: 7px 0 9px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.palette-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  padding: 8px 24px;
+  text-align: left;
+  color: rgba(var(--ink), 0.78);
+  font-size: 14px;
+  font-weight: 500;
+}
+.palette-row[data-active] {
+  background: linear-gradient(90deg, rgba(var(--ochre), 0.24), rgba(var(--fuchsia), 0.1));
+}
+.palette-row .primary { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.palette-row .secondary {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(var(--ink), 0.34);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 48%;
+}
+.palette-row[data-kind='node'] .primary { font-weight: 700; }
+
+/* ----------------------------------------------------------------- sheet */
+
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  overflow-y: auto;
+  background: rgba(250, 249, 246, 0.82);
+  backdrop-filter: blur(20px) saturate(1.06);
+  animation: fade-in 0.22s var(--ease);
+}
+.sheet {
+  width: min(640px, 90vw);
+  margin: 13vh auto 18vh;
+  animation: sheet-in 0.34s var(--ease);
+}
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.994); }
+  to { opacity: 1; transform: none; }
+}
+.sheet-path {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(var(--ink), 0.34);
+  margin-bottom: 18px;
+}
+.sheet-path i { font-style: normal; opacity: 0.45; margin: 0 7px; }
+
+.sheet-title,
+.sheet-note {
+  display: block;
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  background: none;
+}
+.sheet-title {
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -0.004em;
+  line-height: 1.2;
+  color: rgba(var(--ink), 0.93);
+  margin-bottom: 24px;
+}
+.sheet-title::placeholder { color: rgba(var(--ink), 0.16); }
+.sheet-note {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.74;
+  letter-spacing: -0.002em;
+  color: rgba(var(--ink), 0.78);
+  min-height: 34vh;
+  white-space: pre-wrap;
+}
+.sheet-note::placeholder { color: rgba(var(--ink), 0.24); }
+
+.sheet-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+.sheet-links a {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(var(--ink), 0.55);
+  border: 1.5px solid rgba(var(--teal), 0.3);
+  border-radius: 999px;
+  padding: 5px 12px;
+  text-decoration: none;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.sheet-links a:hover {
+  color: rgba(var(--ink), 0.85);
+  border-color: rgba(var(--teal), 0.7);
+  background: rgba(var(--teal), 0.09);
+}
+
+.sheet-foot {
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(var(--ink), 0.32);
+}
+.sheet-foot .spacer { flex: 1; }
+.sheet-foot .ghost { color: rgba(var(--ink), 0.38); transition: color 0.2s var(--ease); }
+.sheet-foot .ghost:hover { color: rgb(var(--ember)); }
+
+.attrs { margin-top: 24px; display: grid; gap: 13px; }
+.attr-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 16px; }
+.attr-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(var(--ink), 0.36);
+}
+.attr-text {
+  width: 100%;
+  font-size: 14px;
+  color: rgba(var(--ink), 0.82);
+  border-bottom: 1px solid var(--hairline);
+  padding: 3px 0 5px;
+}
+.attr-text::placeholder { color: rgba(var(--ink), 0.22); }
+
+.scale { display: flex; align-items: center; gap: 4px; }
+.tick {
+  width: 14px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(var(--ink), 0.1);
+  transition: background 0.18s var(--ease);
+}
+.tick[data-on] { background: rgba(var(--accent, var(--ember)), 0.85); }
+.scale-read {
+  margin-left: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(var(--ink), 0.42);
+}
+
+.choice { display: flex; flex-wrap: wrap; gap: 6px; }
+.choice button {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(var(--ink), 0.38);
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  padding: 4px 11px;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.choice button:hover { color: rgba(var(--ink), 0.72); }
+.choice button[data-on] {
+  color: rgba(var(--ink), 0.88);
+  border-color: rgba(var(--ochre), 0.65);
+  background: rgba(var(--ochre), 0.16);
+}
+
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--sw), 0.95), rgba(var(--sw), 0.6));
+  box-shadow: inset 0 0 0 1px rgba(var(--sw), 0.85);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.swatch[data-none] { background: none; box-shadow: inset 0 0 0 1.5px rgba(var(--ink), 0.2); }
+.swatch:hover { transform: scale(1.18); }
+.swatch[data-active] { box-shadow: inset 0 0 0 1px rgba(var(--sw), 1), 0 0 0 4px rgba(var(--sw), 0.28); }
+
+/* ------------------------------------------------------------- account
+
+   The save button and the two sheets behind it. Everything here borrows the
+   lamp: the button carries its own bead of wax, the sheets sit on the same
+   warm paper as the note sheet, and the one primary action on screen is the
+   only thing wearing a full-strength gradient.
+   ------------------------------------------------------------------------ */
+
+.save-cluster {
+  position: fixed;
+  left: 22px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: rgba(var(--ink), 0.86);
+  background: linear-gradient(102deg, rgba(var(--ochre), 0.9), rgba(var(--ember), 0.82));
+  border-radius: 999px;
+  padding: 9px 17px 9px 13px;
+  box-shadow: 0 10px 24px -12px rgba(var(--ember), 0.85);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.4s var(--ease),
+    color 0.3s var(--ease);
+}
+.save-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 28px -12px rgba(var(--ember), 0.95); }
+.save-btn:active { transform: translateY(0); }
+.save-btn[data-busy] { opacity: 0.72; }
+
+/* Once it is saved and unchanged there is nothing to press, so it stops
+   asking: the gradient drains out and it becomes a label with the map's name. */
+.save-btn[data-settled] {
+  background: rgba(255, 254, 251, 0.8);
+  box-shadow: none;
+  color: rgba(var(--ink), 0.42);
+  font-weight: 600;
+  max-width: 260px;
+  backdrop-filter: blur(8px);
+}
+.save-btn[data-settled] span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.save-btn[data-settled]:hover { color: rgba(var(--ink), 0.72); transform: none; }
+
+/* the bead of wax: still while there is work to do, warming once when it lands */
+.save-wax {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.12));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  animation: wax-bead 2.4s var(--ease);
+}
+.save-btn[data-settled] .save-wax {
+  background: radial-gradient(closest-side, rgb(var(--avocado)), rgba(var(--avocado), 0.35));
+  box-shadow: none;
+}
+@keyframes wax-bead {
+  0% { transform: scale(0.5); }
+  22% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.save-shelf {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(var(--ink), 0.34);
+  border: 1.5px solid rgba(var(--teal), 0.28);
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(255, 254, 251, 0.7);
+  backdrop-filter: blur(8px);
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.save-shelf:hover {
+  color: rgba(var(--ink), 0.75);
+  border-color: rgba(var(--teal), 0.7);
+  background: rgba(var(--teal), 0.1);
+}
+
+/* ---- the sheets ---- */
+
+.gate-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgba(250, 249, 246, 0.72);
+  backdrop-filter: blur(18px) saturate(1.06);
+  animation: fade-in 0.2s var(--ease);
+}
+.gate {
+  width: min(420px, 100%);
+  background: rgba(255, 254, 251, 0.97);
+  border: 1.5px solid rgba(var(--ochre), 0.3);
+  border-radius: 28px;
+  padding: 30px 30px 24px;
+  box-shadow: 0 34px 80px -40px rgba(var(--ember), 0.6);
+  animation: rise-gate 0.28s var(--ease);
+}
+@keyframes rise-gate {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+.gate-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1.16;
+  letter-spacing: -0.004em;
+  background: linear-gradient(100deg, rgb(var(--ember)), rgb(var(--fuchsia)) 55%, rgb(var(--grape)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.gate-sub {
+  margin: 9px 0 22px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(var(--ink), 0.52);
+}
+
+.gate-field { display: block; margin-bottom: 14px; }
+.gate-field span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(var(--ink), 0.38);
+  margin-bottom: 6px;
+}
+.gate-field input {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(var(--ink), 0.9);
+  background: rgba(var(--ochre), 0.07);
+  border: 1.5px solid rgba(var(--ink), 0.09);
+  border-radius: 14px;
+  padding: 10px 13px;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.gate-field input::placeholder { color: rgba(var(--ink), 0.26); font-weight: 400; }
+.gate-field input:focus {
+  border-color: rgba(var(--ember), 0.55);
+  background: rgba(var(--ochre), 0.12);
+}
+
+.gate-error {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgb(var(--ember));
+}
+
+.gate-go {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: rgba(var(--ink), 0.9);
+  background: linear-gradient(100deg, rgba(var(--ochre), 0.95), rgba(var(--ember), 0.9));
+  border-radius: 999px;
+  padding: 12px 18px;
+  margin-top: 6px;
+  box-shadow: 0 12px 26px -14px rgba(var(--ember), 0.9);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), opacity 0.18s var(--ease);
+}
+.gate-go:hover { transform: translateY(-1px); box-shadow: 0 16px 30px -14px rgb(var(--ember)); }
+.gate-go:disabled { opacity: 0.6; transform: none; cursor: default; }
+
+.gate-alt {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  color: rgba(var(--ink), 0.45);
+}
+.gate-alt button {
+  font-size: inherit;
+  font-weight: 700;
+  color: rgb(var(--grape));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(var(--grape), 0.35);
+  transition: text-decoration-color 0.2s var(--ease);
+}
+.gate-alt button:hover { text-decoration-color: rgb(var(--grape)); }
+
+.gate-foot {
+  margin: 18px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11.5px;
+  font-style: italic;
+  line-height: 1.5;
+  color: rgba(var(--ink), 0.34);
+}
+
+/* ---- the shelf ---- */
+
+.shelf { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow-y: auto; }
+.shelf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 14px;
+  padding-right: 6px;
+  transition: background 0.18s var(--ease);
+}
+.shelf-row:hover { background: rgba(var(--ochre), 0.12); }
+.shelf-row[data-current] { background: rgba(var(--teal), 0.13); }
+.shelf-open {
+  flex: 1;
+  display: block;
+  text-align: left;
+  padding: 10px 12px;
+  min-width: 0;
+}
+.shelf-name {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 620;
+  color: rgba(var(--ink), 0.86);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shelf-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: rgba(var(--ink), 0.4);
+}
+.shelf-del {
+  font-size: 17px;
+  line-height: 1;
+  color: rgba(var(--ink), 0.22);
+  padding: 6px 8px;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.18s var(--ease), color 0.18s var(--ease);
+}
+.shelf-row:hover .shelf-del { opacity: 1; }
+.shelf-del:hover { color: rgb(var(--ember)); }
+.shelf-confirm {
+  display: flex;
+  gap: 8px;
+  padding-right: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.shelf-yes { color: rgb(var(--ember)); }
+.shelf-confirm button:last-child { color: rgba(var(--ink), 0.4); }
+.shelf-empty {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(var(--ink), 0.4);
+}
+
+/* ------------------------------------------------------------- restraint */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  /* The lamp stops, but it does not go out — the colour is the design, the
+     motion was only ever the flourish. */
+  .ambient { filter: blur(30px); }
+  .empty-hint .tagline { background-position: 30% 50%; }
+}
